@@ -10,8 +10,26 @@ interface PDFProps {
 
 export default function PDFViewer({file}: PDFProps) {
     return (
-        <Document file={file}>
-            <Page pageNumber={1} />
-        </Document>
+        <div
+            style={{
+                overflow: 'auto',
+                background: "#1e1e1e",
+                padding: "20px",
+                display: "flex",
+                justifyContent: "center"
+            }}
+            onClickCapture={e => {
+                const link = (e.target as HTMLElement).closest("a");
+                if (link) {
+                    e.preventDefault();
+                    window.open(link.href, "_blank");
+                }
+            }}
+        >
+            <Document file={file}>
+                <Page pageNumber={1} />
+            </Document>
+        </div>
+        
     );
 }

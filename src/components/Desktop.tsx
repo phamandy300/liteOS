@@ -3,13 +3,13 @@ import Window from "./Window";
 import Terminal from "./Terminal";
 import "./Desktop.css";
 import App from "./App";
+import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
 
 import terminalIcon from "../assets/terminal.png";
 import pdfIcon from "../assets/pdf.png";
 import reactLogo from "../assets/react.svg";
 import resume from "../assets/resume.pdf";
-import Taskbar from "./Taskbar";
 
 
 interface WindowState {

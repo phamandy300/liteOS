@@ -14,6 +14,9 @@ interface WindowProps {
     zIndex?: number;
 }
 
+const MIN_W = 200;
+const MIN_H = 120;
+
 export default function Window({
     title,
     children,
@@ -30,6 +33,11 @@ export default function Window({
     const dragging = useRef(false);
     const dragOffset = useRef({ x: 0, y: 0 });
 
+    
+    const resizingDir = useRef("");
+    const resizing = useRef(false);
+    const downPos = useRef({ x: 0, y: 0 });
+
     const onMouseDown = useCallback(
         (e: React.MouseEvent) => {
             dragging.current = true;
@@ -40,16 +48,47 @@ export default function Window({
         [pos, onFocus]
     );
 
+    const onResizeMouseDown = (dir: string) => (e: React.MouseEvent) => {
+        onFocus?.();
+        resizingDir.current = dir;
+        resizing.current = true;
+        downPos.current = { x: e.clientX, y: e.clientY };
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
-            if (!dragging.current) return;
-            setPos({ x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y });
-            if (isMaximized.current) {
-                setSize({ w: width, h: height });
-                isMaximized.current = false;
+            if (dragging.current) {
+                setPos({ x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y });
+                if (isMaximized.current) {
+                    setSize({ w: width, h: height });
+                    isMaximized.current = false;
+                }
             }
+            
+
+            else if (resizing.current) {
+                const dx = e.clientX - downPos.current.x;
+                const dy = e.clientY - downPos.current.y;
+                downPos.current = { x: e.clientX, y: e.clientY };
+
+                const dir = resizingDir.current;
+
+                setSize(prev => {
+                    const newW = Math.max(MIN_W, prev.w + (dir.includes("e") ? dx : dir.includes("w") ? -dx : 0));
+                    const newH = Math.max(MIN_H, prev.h + (dir.includes("s") ? dy : dir.includes("n") ? -dy : 0));
+                    return { w: newW, h: newH };
+                });
+
+                setPos(prev => ({
+                    x: prev.x + (dir.includes("w") ? dx : 0),
+                    y: prev.y + (dir.includes("n") ? dy : 0),
+                }));
+            }
+            
         };
-        const onMouseUp = () => { dragging.current = false; };
+        const onMouseUp = () => { dragging.current = false; resizing.current = false };
 
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
@@ -107,21 +146,21 @@ export default function Window({
             </div>
 
             {/* Content */}
-                <div className="window-content" style={{ height: size.h }}>
-                    {children}
-                </div>
+            <div className="window-content" style={{ height: size.h }}>
+                {children}
+            </div>
             
             {/* edges */}
-            <div style={{ position: "absolute", top: 0, left: 4, right: 4, height: 4, cursor: "n-resize" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 4, right: 4, height: 4, cursor: "s-resize" }} />
-            <div style={{ position: "absolute", left: 0, top: 4, bottom: 4, width: 4, cursor: "w-resize" }} />
-            <div style={{ position: "absolute", right: 0, top: 4, bottom: 4, width: 4, cursor: "e-resize" }} />
+            <div style={{ position: "absolute", top: 0, left: 4, right: 4, height: 4, cursor: "n-resize" }} onMouseDown={onResizeMouseDown("n")} />
+            <div style={{ position: "absolute", bottom: 0, left: 4, right: 4, height: 4, cursor: "s-resize" }} onMouseDown={onResizeMouseDown("s")} />
+            <div style={{ position: "absolute", left: 0, top: 4, bottom: 4, width: 4, cursor: "w-resize" }} onMouseDown={onResizeMouseDown("w")} />
+            <div style={{ position: "absolute", right: 0, top: 4, bottom: 4, width: 4, cursor: "e-resize" }} onMouseDown={onResizeMouseDown("e")} />
 
             {/* corners */}
-            <div style={{ position: "absolute", top: 0, left: 0, width: 8, height: 8, cursor: "nw-resize" }} />
-            <div style={{ position: "absolute", top: 0, right: 0, width: 8, height: 8, cursor: "ne-resize" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, width: 8, height: 8, cursor: "sw-resize" }} />
-            <div style={{ position: "absolute", bottom: 0, right: 0, width: 8, height: 8, cursor: "se-resize" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, width: 8, height: 8, cursor: "nw-resize" }} onMouseDown={onResizeMouseDown("nw")} />
+            <div style={{ position: "absolute", top: 0, right: 0, width: 8, height: 8, cursor: "ne-resize" }} onMouseDown={onResizeMouseDown("ne")} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, width: 8, height: 8, cursor: "sw-resize" }} onMouseDown={onResizeMouseDown("sw")} />
+            <div style={{ position: "absolute", bottom: 0, right: 0, width: 8, height: 8, cursor: "se-resize" }} onMouseDown={onResizeMouseDown("se")} />
         </div>
     );
 }
