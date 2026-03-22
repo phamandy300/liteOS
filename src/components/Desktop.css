@@ -1,0 +1,10 @@
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  background: #080808;
+  background-image: url("../assets/serene.jpg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
