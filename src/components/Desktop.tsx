@@ -5,6 +5,7 @@ import "./Desktop.css";
 import App from "./App";
 import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
+import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
 
 import terminalIcon from "../assets/terminal.png";
 import pdfIcon from "../assets/pdf.png";
@@ -35,6 +36,8 @@ let topZ = 10;
 let appId = 1;
 
 export default function Desktop() {
+    const particleRef = useRef<ParticleBackgroundHandle>(null);
+    
     // WINDOW MANAGEMENT
     const [windows, setWindows] = useState<WindowState[]>([
         { id: windowId++, title: "terminal", zIndex: topZ, type: "terminal", hidden: true},
@@ -104,6 +107,8 @@ export default function Desktop() {
         currPos.current = { x: e.clientX, y: e.clientY };
         setApps(prev => prev.map(a => ({ ...a, selected: false })));
         e.preventDefault();
+
+        particleRef.current?.addParticle(e.clientX, e.clientY);
     }, []);
 
     useEffect(() => {
@@ -159,8 +164,8 @@ export default function Desktop() {
             <div style={{
                 position: "absolute",
                 left, top, width, height,
-                background: "#008cff61",
-                outline: "1px solid #008cff",
+                background: "#ffffff2f",
+                outline: "1px solid #ffffff89",
                 pointerEvents: "none"
             }} />
         );
@@ -168,6 +173,7 @@ export default function Desktop() {
 
     return (
         <div className="desktop" onMouseDown={onMouseDown}>
+            <ParticleBackground ref={particleRef}/>
             {apps.map(a => (
                 <App
                     key={a.id}

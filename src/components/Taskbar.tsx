@@ -10,6 +10,7 @@ interface AppState {
     id: number;
     name: string;
     icon: string;
+    open: boolean;
     dimensions: { w: number; h: number };
 }
 
@@ -22,9 +23,9 @@ export default function Taskbar() {
     let appId = 1;
 
     const [apps, setApps] = useState<AppState[]>([
-        { id: appId++, name: "Terminal", icon: terminalIcon, dimensions: { w: 20, h: 20 } },
-        { id: appId++, name: "Resume", icon: pdfIcon, dimensions: { w: 20, h: 20 } },
-        { id: appId++, name: "Andy Pham", icon: reactLogo, dimensions: { w: 20, h: 20 } },
+        { id: appId++, name: "Terminal", open: false, icon: terminalIcon, dimensions: { w: 20, h: 20 } },
+        { id: appId++, name: "Resume", open: false, icon: pdfIcon, dimensions: { w: 20, h: 20 } },
+        { id: appId++, name: "Andy Pham", open: false, icon: reactLogo, dimensions: { w: 20, h: 20 } },
     ]);
 
     return (

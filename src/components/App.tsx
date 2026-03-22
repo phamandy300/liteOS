@@ -50,7 +50,7 @@ export default function App({
                 padding: "4px",
                 borderRadius: "4px",
                 ...(selected && {
-                    background: "#9dacb761",
+                    background: "#d5dde361",
                     outline: "1px solid #ffffff89"
                 })
             }}

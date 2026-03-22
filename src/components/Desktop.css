@@ -1,4 +1,4 @@
-.desktop {
+/* .desktop {
   width: 100vw;
   height: 100vh;
   background: #080808;
@@ -7,4 +7,16 @@
   background-position: center;
   position: relative;
   overflow: hidden;
+} */
+
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+
+  /* background: #D6F2FF; */
+  background: #87B7FF;
+  /* background: #0F1C70; */
+  background-size: 400% 400%;
 }
