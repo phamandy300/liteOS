@@ -41,7 +41,7 @@ const initialApps: AppState[] = [
     { id: appId++, name: "File Explorer",icon: explorer,    selected: false, pos: { x: 0 * CELL_W, y: 0 * CELL_H }, dimensions: { w: 55, h: 55 } },
     { id: appId++, name: "Terminal", icon: terminalIcon, selected: false, pos: { x: 0 * CELL_W, y: 1 * CELL_H }, dimensions: { w: 55, h: 55 }, singleInstance: true },
     { id: appId++, name: "Resume",   icon: pdfIcon,      selected: false, pos: { x: 0 * CELL_W, y: 2 * CELL_H }, dimensions: { w: 55, h: 55 } },
-    { id: appId++, name: "Andy Pham",icon: reactLogo,    selected: false, pos: { x: 0 * CELL_W, y: 3 * CELL_H }, dimensions: { w: 55, h: 55 } },
+    { id: appId++, name: "Portfolio",icon: reactLogo,    selected: false, pos: { x: 0 * CELL_W, y: 3 * CELL_H }, dimensions: { w: 55, h: 55 } },
 ];
 
 export default function Desktop() {

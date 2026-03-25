@@ -140,7 +140,7 @@ export default function Window({
                             e.stopPropagation(); 
                             onMinimize?.();
                         }}
-                        title="Maximize"
+                        title="Minimize"
                     />
                     <button
                         className="win-btn maximize"
