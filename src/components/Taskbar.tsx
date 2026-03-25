@@ -1,4 +1,4 @@
-import "./Taskbar.css";
+import "./css/Taskbar.css";
 import { useState, useEffect } from "react";
 import type { AppState, WindowState } from "./Desktop";
 

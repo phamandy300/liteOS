@@ -1,4 +1,4 @@
-import "./App.css";
+import "./css/App.css";
 
 interface AppProps {
     name?: string;
@@ -65,7 +65,7 @@ export default function App({
 
             <p style={{
                 color: "white",
-                fontSize: "12px",
+                fontSize: "11px",
                 textAlign: "center",
                 marginTop: "4px",
                 width: w,

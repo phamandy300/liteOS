@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
-import "./Window.css";
+import "./css/Window.css";
 
 interface WindowProps {
     title: string;

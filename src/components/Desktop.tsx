@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Window from "./Window";
 import Terminal from "./Terminal";
-import "./Desktop.css";
+import "./css/Desktop.css";
 import App from "./App";
 import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
+import WebViewer from "./WebViewer";
 import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
 
 import terminalIcon from "../assets/terminal.png";
@@ -337,6 +338,7 @@ export default function Desktop() {
                             >
                                 {app.name === "Terminal" && <Terminal ref={terminalRef} />}
                                 {app.name === "Resume"   && <PDFViewer file={resume} />}
+                                {app.name === "Portfolio"   && <WebViewer url="https://andypham.cc/" />}
                             </Window>
                         </div>
                     );
