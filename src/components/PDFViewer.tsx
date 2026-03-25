@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import "./PDFViewer.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -10,42 +11,40 @@ interface PDFProps {
 }
 
 export default function PDFViewer({ file }: PDFProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [width, setWidth] = useState(0);
-
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setWidth(containerRef.current.offsetWidth - 40);
-            }
-        };
-
-        updateWidth();
-        window.addEventListener("resize", updateWidth);
-        return () => window.removeEventListener("resize", updateWidth);
-    }, []);
+    const [zoom, setZoom] = useState(1);
 
     return (
         <div
-            ref={containerRef}
-            style={{
-                overflow: "auto",
-                background: "#1e1e1e",
-                padding: "20px",
-                display: "flex",
-                justifyContent: "center"
-            }}
+            style={{ display: "flex", flexDirection: "column", height: "100%", background: "#1e1e1e" }}
             onClickCapture={e => {
                 const link = (e.target as HTMLElement).closest("a");
-                if (link) {
-                    e.preventDefault();
-                    window.open(link.href, "_blank");
-                }
+                if (link) { e.preventDefault(); window.open(link.href, "_blank"); }
             }}
         >
-            <Document file={file}>
-                <Page pageNumber={1} width={width} />
-            </Document>
+            <div 
+                className="zoom"
+                style={{
+                    display: "flex", 
+                    gap: "8px", 
+                    padding: "8px 12px",
+                    background: "#161616", 
+                    borderBottom: "1px solid #2a2a2a",
+                    alignItems: "center", 
+                    flexShrink: 0,
+            }}>
+                <button onClick={() => setZoom(z => Math.max(0.25, +(z - 0.1).toFixed(2)))}>−</button>
+                <span style={{ color: "#888", fontSize: 12, minWidth: 40, textAlign: "center" }}>
+                    {Math.round(zoom * 100)}%
+                </span>
+                <button onClick={() => setZoom(z => Math.min(3, +(z + 0.1).toFixed(2)))}>+</button>
+                <button onClick={() => setZoom(1)} style={{ marginLeft: 4 }}>fit</button>
+            </div>
+
+            <div style={{ overflow: "auto", flex: 1, padding: "20px", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
+                <Document file={file}>
+                    <Page pageNumber={1} scale={zoom} />
+                </Document>
+            </div>
         </div>
     );
 }
