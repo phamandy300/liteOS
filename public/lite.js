@@ -3721,6 +3721,19 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
   }
   }
 
+  function ___syscall_mkdirat(dirfd, path, mode) {
+  try {
+  
+      path = SYSCALLS.getStr(path);
+      path = SYSCALLS.calculateAt(dirfd, path);
+      FS.mkdir(path, mode, 0);
+      return 0;
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+
   var syscallGetVarargI = () => {
       assert(SYSCALLS.varargs != undefined);
       // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
@@ -4762,6 +4775,7 @@ function checkIncomingModuleAPI() {
 }
 function __asyncjs__js_readline() { return Asyncify.handleAsync(async () => { return new Promise(resolve => { window.__requestLine = resolve; }).then(line => { var len = lengthBytesUTF8(line) + 1; var buf = _malloc(len); stringToUTF8(line, buf, len); return buf; }); }); }
 function js_print_prompt(cwd) { var str = UTF8ToString(cwd); if (window.__printPrompt) window.__printPrompt(str); }
+function __asyncjs__js_edit_file(filename,content) { return Asyncify.handleAsync(async () => { return new Promise(resolve => { var fname = UTF8ToString(filename); var text = UTF8ToString(content); window.__openEditor(fname, text, resolve); }).then(newContent => { var len = lengthBytesUTF8(newContent) + 1; var buf = _malloc(len); stringToUTF8(newContent, buf, len); return buf; }); }); }
 
 // Imports from the Wasm binary.
 var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
@@ -4847,6 +4861,8 @@ var wasmImports = {
   __syscall_getcwd: ___syscall_getcwd,
   /** @export */
   __syscall_getdents64: ___syscall_getdents64,
+  /** @export */
+  __syscall_mkdirat: ___syscall_mkdirat,
   /** @export */
   __syscall_openat: ___syscall_openat,
   /** @export */

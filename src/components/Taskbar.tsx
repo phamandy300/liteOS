@@ -1,45 +1,57 @@
 import "./Taskbar.css";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import type { AppState, WindowState } from "./Desktop";
 
-import sun from "/sun1.png"
-import terminalIcon from "../assets/terminal.png";
-import pdfIcon from "../assets/pdf.png";
-import reactLogo from "../assets/react.svg";
+import sun from "/sun1.png";
 
-interface AppState {
-    id: number;
-    name: string;
-    icon: string;
-    open: boolean;
-    dimensions: { w: number; h: number };
+interface TaskbarProps {
+    windows: WindowState[];
+    apps: AppState[];
+    onToggleWindow: (id: number) => void;
+    onFocusWindow: (id: number) => void;
 }
 
-export default function Taskbar() {
-    const now = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+export default function Taskbar({ windows, apps, onToggleWindow, onFocusWindow }: TaskbarProps) {
+    const [now, setNow] = useState(() =>
+        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    );
 
-    let appId = 1;
-
-    const [apps, setApps] = useState<AppState[]>([
-        { id: appId++, name: "Terminal", open: false, icon: terminalIcon, dimensions: { w: 20, h: 20 } },
-        { id: appId++, name: "Resume", open: false, icon: pdfIcon, dimensions: { w: 20, h: 20 } },
-        { id: appId++, name: "Andy Pham", open: false, icon: reactLogo, dimensions: { w: 20, h: 20 } },
-    ]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+        }, 100);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="taskbar">
             <div className="taskbar-left">
                 <div className="start-button">
-                    <img src={sun} width={28}/>
+                    <img src={sun} width={28} />
                 </div>
 
-                {apps.map(a => 
-                    <div className="taskbar-app">
-                        <img src={a.icon} width={a.dimensions.w} height={a.dimensions.h}/>
-                    </div>
-                )}
+                {windows.map(w => {
+                    const app = apps.find(a => a.id === w.appId);
+                    if (!app) return null;
+
+                    const isTop = !w.hidden && w.zIndex === Math.max(...windows.filter(w => !w.hidden).map(w => w.zIndex));
+
+                    const stateClass = w.hidden ? "minimized" : isTop ? "active" : "inactive";
+                    
+                    return (
+                        <div
+                            key={w.id}
+                            className={`taskbar-app ${stateClass}`}
+                            onClick={() => {
+                                if (isTop || w.hidden) onToggleWindow(w.id);
+                                else onFocusWindow(w.id);
+                            }}
+                        >
+                            <img src={app.icon} width={14} height={14} />
+                            {app.name}
+                        </div>
+                    );
+                })}
             </div>
 
             <div className="taskbar-right">

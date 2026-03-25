@@ -18,7 +18,7 @@ const Terminal = forwardRef((props, ref) => {
         const term = new Term({
             theme: {
                 background: "#000000",
-                foreground: "#c8c8c8",
+                foreground: "#80dbff",
             },
             fontFamily: "'Share Tech Mono', 'Courier New', monospace",
             fontSize: 14,
@@ -67,7 +67,7 @@ const Terminal = forwardRef((props, ref) => {
             },
             onRuntimeInitialized: () => {
                 (window as any).__printPrompt = (cwd: string) => {
-                    term.write("\x1b[32m" + cwd + "\x1b[0m > ");
+                    term.write("\x1b[0m" + cwd + "\x1b[37m > ");
                 };
             }
         };

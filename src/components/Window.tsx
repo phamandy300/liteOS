@@ -10,6 +10,7 @@ interface WindowProps {
     width?: number;
     height?: number;
     onClose?: () => void;
+    onMinimize?: () => void;
     onFocus?: () => void;
     zIndex?: number;
 }
@@ -25,6 +26,7 @@ export default function Window({
     width = 720,
     height = 480,
     onClose,
+    onMinimize,
     onFocus,
     zIndex = 1,
 }: WindowProps) {
@@ -88,6 +90,7 @@ export default function Window({
             }
             
         };
+
         const onMouseUp = () => { dragging.current = false; resizing.current = false };
 
         document.addEventListener("mousemove", onMouseMove);
@@ -132,11 +135,17 @@ export default function Window({
                         title="Close"
                     />
                     <button
+                        className="win-btn minimize"
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            onMinimize?.();
+                        }}
+                        title="Maximize"
+                    />
+                    <button
                         className="win-btn maximize"
                         onClick={(e) => { 
                             e.stopPropagation(); 
-                            // setMinimized(m => !m);
-                            // setSize({w: 1920, h: 1080});
                             maximize();
                         }}
                         title="Maximize"

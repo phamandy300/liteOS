@@ -10,6 +10,7 @@ interface AppProps {
     h?: number;
     onClick?: () => void;
     onDoubleClick?: () => void;
+    onMouseDown?: (e: React.MouseEvent) => void;
 }
 
 export default function App({ 
@@ -21,7 +22,8 @@ export default function App({
     w, 
     h, 
     onClick, 
-    onDoubleClick 
+    onDoubleClick,
+    onMouseDown,
 }: AppProps) {
     let clickTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -55,6 +57,7 @@ export default function App({
                 })
             }}
             onClick={handleClick}
+            onMouseDown={onMouseDown}
         >
             <div style={{ width: w, height: h }}>
                 <img src={icon} width={w} height={h} draggable={false} />

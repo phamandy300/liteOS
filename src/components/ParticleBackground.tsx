@@ -45,7 +45,7 @@ function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number
         rot += step;
     }
     ctx.closePath();
-    ctx.fillStyle = `rgba(15, 28, 112, ${opacity})`;
+    ctx.fillStyle = `rgba(255, 255, 255 , ${opacity})`;
     ctx.fill();
 
     ctx.beginPath();
@@ -143,11 +143,11 @@ const ParticleBackground = forwardRef<ParticleBackgroundHandle>((_, ref) => {
                     const dy = pts[i].y - pts[j].y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < MAX_DIST) {
-                        const alpha = (1 - dist / MAX_DIST) * 0.50;
+                        // const alpha = (1 - dist / MAX_DIST) * 0.50;
                         ctx.beginPath();
                         ctx.moveTo(pts[i].x, pts[i].y);
                         ctx.lineTo(pts[j].x, pts[j].y);
-                        ctx.strokeStyle = `rgba(15, 28, 112, ${alpha})`;
+                        ctx.strokeStyle = `rgba(255, 255, 255 , ${0})`;
                         ctx.lineWidth = 0.3;
                         ctx.stroke();
                     }
