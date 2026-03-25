@@ -10,7 +10,7 @@ declare global {
     }
 }
 
-const Terminal = forwardRef((props, ref) => {
+const Terminal = forwardRef((_, ref) => {
     const termRef = useRef<HTMLDivElement>(null);
     const termInstance  = useRef<Term | null>(null);
 
