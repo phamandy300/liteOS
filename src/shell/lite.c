@@ -12,7 +12,7 @@ int execute(char **);
 
 EM_ASYNC_JS(char*, js_readline, (), {
     return new Promise(resolve => {
-        window.__requestLine = resolve;
+        self.__requestLine = resolve;
     }).then(line => {
         var len = lengthBytesUTF8(line) + 1;
         var buf = _malloc(len);
@@ -23,14 +23,14 @@ EM_ASYNC_JS(char*, js_readline, (), {
 
 EM_JS(void, js_print_prompt, (const char* cwd), {
     var str = UTF8ToString(cwd);
-    if (window.__printPrompt) window.__printPrompt(str);
+    if (self.__printPrompt) self.__printPrompt(str);
 });
 
 EM_ASYNC_JS(char*, js_edit_file, (const char* filename, const char* content), {
     return new Promise(resolve => {
         var fname = UTF8ToString(filename);
         var text  = UTF8ToString(content);
-        window.__openEditor(fname, text, resolve);
+        self.__openEditor(fname, text, resolve);
     }).then(newContent => {
         var len = lengthBytesUTF8(newContent) + 1;
         var buf = _malloc(len);

@@ -4,6 +4,9 @@ import type { AppState, WindowState } from "./Desktop";
 
 import sun from "/sun1.png";
 
+// TODO:
+// MAKE TASKBAR TAB ORDER INDEPENDENT OF WINDOW
+
 interface TaskbarProps {
     windows: WindowState[];
     apps: AppState[];

@@ -7,6 +7,8 @@ import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
 import WebViewer from "./WebViewer";
 import FileExplorer from "./FileExplorer";
+import { useWorker } from "./useWorker";
+import { workerFS, onFSReady } from "./workerFS";
 import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
 
 import terminalIcon from "../assets/terminal.png";
@@ -22,7 +24,6 @@ export interface AppState {
     selected: boolean;
     pos: { x: number; y: number };
     dimensions: { w: number; h: number };
-    singleInstance?: boolean;
 }
 
 export interface WindowState {
@@ -30,7 +31,6 @@ export interface WindowState {
     appId: number;
     zIndex: number;
     hidden: boolean;
-    open?: boolean;
 }
 
 const CELL_W = 80;
@@ -41,31 +41,39 @@ let topZ = 10;
 let appId = 1;
 
 const initialApps: AppState[] = [
-    { id: appId++, name: "File Explorer",icon: explorer,    selected: false, pos: { x: 0 * CELL_W, y: 0 * CELL_H }, dimensions: { w: 55, h: 55 } },
-    { id: appId++, name: "Terminal", icon: terminalIcon, selected: false, pos: { x: 0 * CELL_W, y: 1 * CELL_H }, dimensions: { w: 55, h: 55 }, singleInstance: true},
+    { id: appId++, name: "File Explorer",icon: explorer, selected: false, pos: { x: 0 * CELL_W, y: 0 * CELL_H }, dimensions: { w: 55, h: 55 } },
+    { id: appId++, name: "Terminal", icon: terminalIcon, selected: false, pos: { x: 0 * CELL_W, y: 1 * CELL_H }, dimensions: { w: 55, h: 55 } },
     { id: appId++, name: "Resume",   icon: pdfIcon,      selected: false, pos: { x: 0 * CELL_W, y: 2 * CELL_H }, dimensions: { w: 55, h: 55 } },
     { id: appId++, name: "Portfolio",icon: reactLogo,    selected: false, pos: { x: 0 * CELL_W, y: 3 * CELL_H }, dimensions: { w: 55, h: 55 } },
 ];
 
 export default function Desktop() {
     // FILE SYSTEM
-    window.__onModuleReady = () => {
-        window.Module.FS.mkdir('/home/web_user/desktop');
-        initialApps.forEach(app => {
-            window.Module.FS.writeFile(
-                `/home/web_user/desktop/${app.name}`,
-                JSON.stringify(app) + "\n"
-            );
-        });
-        // window.Module.FS.chdir("/home/web_user/desktop");
-    }
+    const worker = useWorker();
+    const fs = workerFS(worker);
+    useEffect(() => {
+        onFSReady(worker, async () => {
+        try {
+            await fs.mkdir('/home/web_user/desktop');
+        } catch(e) {
+            console.error("[desktop] mkdir failed", e);
+        }
+        for (const app of initialApps) {
+            try {
+                const content = JSON.stringify(app) + "\n";
+                await fs.writeFile(`/home/web_user/desktop/${app.name}`, content);
+            } catch(e) {
+                console.error("[desktop] writeFile failed", app.name, e);
+            }
+        }
+        worker.postMessage({ type: "fs:initialized" });
+    });
+    }, []);
 
     const particleRef = useRef<ParticleBackgroundHandle>(null);
 
     const [apps, setApps] = useState<AppState[]>(initialApps);
-    const [windows, setWindows] = useState<WindowState[]>([
-        { id: windowId++, appId: initialApps[1].id, zIndex: topZ, hidden: true, open: false},
-    ]);
+    const [windows, setWindows] = useState<WindowState[]>([]);
 
     const terminalRef = useRef<{ clear: () => void }>(null);
 
@@ -100,12 +108,6 @@ export default function Desktop() {
         setWindows(ws => {
             const win = ws.find(w => w.id === id);
             if (!win) return ws;
-            const app = initialApps.find(a => a.id === win.appId);
-            // Single-instance apps (Terminal) are hidden rather than destroyed
-            if (app?.singleInstance) {
-                if (app.name === "Terminal") terminalRef.current?.clear();
-                return ws.map(w => w.id === id ? { ...w, hidden: true, open: false } : w);
-            }
             return ws.filter(w => w.id !== id);
         });
     }, []);
@@ -119,16 +121,6 @@ export default function Desktop() {
     const onAppDoubleClick = useCallback((id: number) => {
         const app = apps.find(a => a.id === id);
         if (!app) return;
-
-        if (app.singleInstance) {
-            const existing = windows.find(w => w.appId === app.id);
-            if (existing) {
-                topZ++;
-                setWindows(ws => ws.map(w => w.id === existing.id ? { ...w, hidden: false, zIndex: topZ, open: true } : w));
-                return;
-            }
-        }
-
         topZ++;
         setWindows(prev => [...prev, { id: windowId++, appId: app.id, zIndex: topZ, hidden: false }]);
     }, [apps, windows]);

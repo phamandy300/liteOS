@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "shell": "cd src/shell && C:/Users/axdyf/Desktop/emsdk/upstream/emscripten/emcc.bat lite.c -o lite.js -s ASYNCIFY -s ASYNCIFY_IGNORE_INDIRECT=1 -s EXPORTED_RUNTIME_METHODS=[ccall,cwrap,FS] -s EXPORTED_FUNCTIONS=[_main] -s EXIT_RUNTIME=0 && move lite.js ..\\..\\public && move lite.wasm ..\\..\\public"
+    "shell": "cd src/shell && C:/Users/axdyf/Desktop/emsdk/upstream/emscripten/emcc.bat lite.c -o lite.js -s ASYNCIFY -s ASYNCIFY_IGNORE_INDIRECT=1 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=[ccall,cwrap,FS,callMain] -s EXPORTED_FUNCTIONS=[_main] -s EXIT_RUNTIME=0 -s ENVIRONMENT=web,worker && move lite.js ..\\..\\public && move lite.wasm ..\\..\\public"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",

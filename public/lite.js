@@ -17,8 +17,11 @@
   // Note: We use a typeof check here instead of optional chaining using
   // globalThis because older browsers might not have globalThis defined.
   var currentNodeVersion = typeof process !== 'undefined' && process.versions?.node ? humanReadableVersionToPacked(process.versions.node) : TARGET_NOT_SUPPORTED;
-  if (currentNodeVersion < 160000) {
-    throw new Error(`This emscripten-generated code requires node v${ packedVersionToHumanReadable(160000) } (detected v${packedVersionToHumanReadable(currentNodeVersion)})`);
+  if (currentNodeVersion < TARGET_NOT_SUPPORTED) {
+    throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  }
+  if (currentNodeVersion < 2147483647) {
+    throw new Error(`This emscripten-generated code requires node v${ packedVersionToHumanReadable(2147483647) } (detected v${packedVersionToHumanReadable(currentNodeVersion)})`);
   }
 
   var userAgent = typeof navigator !== 'undefined' && navigator.userAgent;
@@ -83,9 +86,6 @@ var quit_ = (status, toThrow) => {
 // before the page load. In non-MODULARIZE modes generate it here.
 var _scriptName = globalThis.document?.currentScript?.src;
 
-if (typeof __filename != 'undefined') { // Node
-  _scriptName = __filename;
-} else
 if (ENVIRONMENT_IS_WORKER) {
   _scriptName = self.location.href;
 }
@@ -102,50 +102,6 @@ function locateFile(path) {
 // Hooks that are implemented differently in different runtime environments.
 var readAsync, readBinary;
 
-if (ENVIRONMENT_IS_NODE) {
-  const isNode = globalThis.process?.versions?.node && globalThis.process?.type != 'renderer';
-  if (!isNode) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
-
-  // These modules will usually be used on Node.js. Load them eagerly to avoid
-  // the complexity of lazy-loading.
-  var fs = require('node:fs');
-
-  scriptDirectory = __dirname + '/';
-
-// include: node_shell_read.js
-readBinary = (filename) => {
-  // We need to re-wrap `file://` strings to URLs.
-  filename = isFileURI(filename) ? new URL(filename) : filename;
-  var ret = fs.readFileSync(filename);
-  assert(Buffer.isBuffer(ret));
-  return ret;
-};
-
-readAsync = async (filename, binary = true) => {
-  // See the comment in the `readBinary` function.
-  filename = isFileURI(filename) ? new URL(filename) : filename;
-  var ret = fs.readFileSync(filename, binary ? undefined : 'utf8');
-  assert(binary ? Buffer.isBuffer(ret) : typeof ret == 'string');
-  return ret;
-};
-// end include: node_shell_read.js
-  if (process.argv.length > 1) {
-    thisProgram = process.argv[1].replace(/\\/g, '/');
-  }
-
-  arguments_ = process.argv.slice(2);
-
-  // MODULARIZE will export the module in the proper place outside, we don't need to export here
-  if (typeof module != 'undefined') {
-    module['exports'] = Module;
-  }
-
-  quit_ = (status, toThrow) => {
-    process.exitCode = status;
-    throw toThrow;
-  };
-
-} else
 if (ENVIRONMENT_IS_SHELL) {
 
 } else
@@ -176,26 +132,7 @@ if (ENVIRONMENT_IS_WORKER) {
   }
 
   readAsync = async (url) => {
-    // Fetch has some additional restrictions over XHR, like it can't be used on a file:// url.
-    // See https://github.com/github/fetch/pull/92#issuecomment-140665932
-    // Cordova or Electron apps are typically loaded from a file:// url.
-    // So use XHR on webview if URL is a file URL.
-    if (isFileURI(url)) {
-      return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = () => {
-          if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-            resolve(xhr.response);
-            return;
-          }
-          reject(xhr.status);
-        };
-        xhr.onerror = reject;
-        xhr.send(null);
-      });
-    }
+    assert(!isFileURI(url), "readAsync does not work with file:// URLs");
     var response = await fetch(url, { credentials: 'same-origin' });
     if (response.ok) {
       return response.arrayBuffer();
@@ -224,6 +161,8 @@ var NODEFS = 'NODEFS is no longer included by default; build with -lnodefs.js';
 
 // perform assertions in shell.js after we set up out() and err(), as otherwise
 // if an assertion fails it cannot print the message
+
+assert(!ENVIRONMENT_IS_NODE, 'node environment detected but not enabled at build time.  Add `node` to `-sENVIRONMENT` to enable.');
 
 assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at build time.  Add `shell` to `-sENVIRONMENT` to enable.');
 
@@ -651,15 +590,6 @@ async function instantiateArrayBuffer(binaryFile, imports) {
 
 async function instantiateAsync(binary, binaryFile, imports) {
   if (!binary
-      // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
-      && !isFileURI(binaryFile)
-      // Avoid instantiateStreaming() on Node.js environment for now, as while
-      // Node.js v18.1.0 implements it, it does not have a full fetch()
-      // implementation yet.
-      //
-      // Reference:
-      //   https://github.com/emscripten-core/emscripten/pull/16917
-      && !ENVIRONMENT_IS_NODE
      ) {
     try {
       var response = fetch(binaryFile, { credentials: 'same-origin' });
@@ -836,9 +766,6 @@ async function createWasm() {
             err('(end of list)');
           }
         }, 10000);
-        // Prevent this timer from keeping the runtime alive if nothing
-        // else is.
-        runDependencyWatcher.unref?.()
       }
     };
 
@@ -930,7 +857,6 @@ async function createWasm() {
       warnOnce.shown ||= {};
       if (!warnOnce.shown[text]) {
         warnOnce.shown[text] = 1;
-        if (ENVIRONMENT_IS_NODE) text = 'warning: ' + text;
         err(text);
       }
     };
@@ -999,11 +925,6 @@ join2:(l, r) => PATH.normalize(l + '/' + r),
 };
 
 var initRandomFill = () => {
-    // This block is not needed on v19+ since crypto.getRandomValues is builtin
-    if (ENVIRONMENT_IS_NODE) {
-      var nodeCrypto = require('node:crypto');
-      return (view) => nodeCrypto.randomFillSync(view);
-    }
 
     return (view) => crypto.getRandomValues(view);
   };
@@ -1205,35 +1126,6 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
   var FS_stdin_getChar = () => {
       if (!FS_stdin_getChar_buffer.length) {
         var result = null;
-        if (ENVIRONMENT_IS_NODE) {
-          // we will read data by chunks of BUFSIZE
-          var BUFSIZE = 256;
-          var buf = Buffer.alloc(BUFSIZE);
-          var bytesRead = 0;
-  
-          // For some reason we must suppress a closure warning here, even though
-          // fd definitely exists on process.stdin, and is even the proper way to
-          // get the fd of stdin,
-          // https://github.com/nodejs/help/issues/2136#issuecomment-523649904
-          // This started to happen after moving this logic out of library_tty.js,
-          // so it is related to the surrounding code in some unclear manner.
-          /** @suppress {missingProperties} */
-          var fd = process.stdin.fd;
-  
-          try {
-            bytesRead = fs.readSync(fd, buf, 0, BUFSIZE);
-          } catch(e) {
-            // Cross-platform differences: on Windows, reading EOF throws an
-            // exception, but on other OSes, reading EOF returns 0. Uniformize
-            // behavior by treating the EOF exception to return 0.
-            if (e.toString().includes('EOF')) bytesRead = 0;
-            else throw e;
-          }
-  
-          if (bytesRead > 0) {
-            result = buf.slice(0, bytesRead).toString('utf-8');
-          }
-        } else
         if (globalThis.window?.prompt) {
           // Browser.
           result = window.prompt('Input: ');  // returns null on cancel
@@ -4078,6 +3970,7 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
       return ret;
     };
 
+
   var runAndAbortIfError = (func) => {
       try {
         return func();
@@ -4486,6 +4379,18 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
     };
 
 
+  var FS_createPath = (...args) => FS.createPath(...args);
+
+
+
+  var FS_unlink = (...args) => FS.unlink(...args);
+
+  var FS_createLazyFile = (...args) => FS.createLazyFile(...args);
+
+  var FS_createDevice = (...args) => FS.createDevice(...args);
+
+
+
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.preloadFile = FS_preloadFile;
   FS.staticInit();;
@@ -4536,9 +4441,18 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 }
 
 // Begin runtime exports
+  Module['callMain'] = callMain;
+  Module['addRunDependency'] = addRunDependency;
+  Module['removeRunDependency'] = removeRunDependency;
   Module['ccall'] = ccall;
   Module['cwrap'] = cwrap;
+  Module['FS_preloadFile'] = FS_preloadFile;
+  Module['FS_unlink'] = FS_unlink;
+  Module['FS_createPath'] = FS_createPath;
+  Module['FS_createDevice'] = FS_createDevice;
   Module['FS'] = FS;
+  Module['FS_createDataFile'] = FS_createDataFile;
+  Module['FS_createLazyFile'] = FS_createLazyFile;
   var missingLibrarySymbols = [
   'writeI53ToI64',
   'writeI53ToI64Clamped',
@@ -4700,7 +4614,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'run',
   'out',
   'err',
-  'callMain',
   'abort',
   'wasmExports',
   'HEAPF32',
@@ -4748,8 +4661,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'wasmMemory',
   'getUniqueRunDependency',
   'noExitRuntime',
-  'addRunDependency',
-  'removeRunDependency',
   'addOnPreRun',
   'addOnPostRun',
   'freeTableIndexes',
@@ -4801,15 +4712,11 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'SYSCALLS',
   'preloadPlugins',
   'FS_createPreloadedFile',
-  'FS_preloadFile',
   'FS_modeStringToFlags',
   'FS_getMode',
   'FS_fileDataToTypedArray',
   'FS_stdin_getChar_buffer',
   'FS_stdin_getChar',
-  'FS_unlink',
-  'FS_createPath',
-  'FS_createDevice',
   'FS_readFile',
   'FS_root',
   'FS_mounts',
@@ -4913,9 +4820,7 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'FS_findObject',
   'FS_analyzePath',
   'FS_createFile',
-  'FS_createDataFile',
   'FS_forceLoadFile',
-  'FS_createLazyFile',
   'MEMFS',
   'TTY',
   'PIPEFS',
@@ -4955,9 +4860,9 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onFree');
   ignoredModuleProp('onSbrkGrow');
 }
-function __asyncjs__js_readline() { return Asyncify.handleAsync(async () => { return new Promise(resolve => { window.__requestLine = resolve; }).then(line => { var len = lengthBytesUTF8(line) + 1; var buf = _malloc(len); stringToUTF8(line, buf, len); return buf; }); }); }
-function js_print_prompt(cwd) { var str = UTF8ToString(cwd); if (window.__printPrompt) window.__printPrompt(str); }
-function __asyncjs__js_edit_file(filename,content) { return Asyncify.handleAsync(async () => { return new Promise(resolve => { var fname = UTF8ToString(filename); var text = UTF8ToString(content); window.__openEditor(fname, text, resolve); }).then(newContent => { var len = lengthBytesUTF8(newContent) + 1; var buf = _malloc(len); stringToUTF8(newContent, buf, len); return buf; }); }); }
+function __asyncjs__js_readline() { return Asyncify.handleAsync(async () => { return new Promise(resolve => { self.__requestLine = resolve; }).then(line => { var len = lengthBytesUTF8(line) + 1; var buf = _malloc(len); stringToUTF8(line, buf, len); return buf; }); }); }
+function js_print_prompt(cwd) { var str = UTF8ToString(cwd); if (self.__printPrompt) self.__printPrompt(str); }
+function __asyncjs__js_edit_file(filename,content) { return Asyncify.handleAsync(async () => { return new Promise(resolve => { var fname = UTF8ToString(filename); var text = UTF8ToString(content); self.__openEditor(fname, text, resolve); }).then(newContent => { var len = lengthBytesUTF8(newContent) + 1; var buf = _malloc(len); stringToUTF8(newContent, buf, len); return buf; }); }); }
 
 // Imports from the Wasm binary.
 var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
