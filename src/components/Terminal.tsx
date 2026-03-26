@@ -2,7 +2,7 @@ import { Terminal as Term } from "@xterm/xterm";
 import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { FitAddon } from "@xterm/addon-fit";
-import { useWorker } from "./useWorker";
+import { useWorker } from "./WorkerContext";
 
 const Terminal = forwardRef((_, ref) => {
     const termRef = useRef<HTMLDivElement>(null);
