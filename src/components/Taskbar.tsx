@@ -1,5 +1,5 @@
 import "./css/Taskbar.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { AppState, WindowState } from "./Desktop";
 
 import sun from "/sun1.png";
