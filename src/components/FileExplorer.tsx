@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useWorker } from "./useWorker";
-import { workerFS, attachFSHandler, onFSInitialized } from "./workerFS";
+import { useWorker } from "./WorkerContext";
+import { workerFS, onFSInitialized } from "./workerFS";
 import "./css/FileExplorer.css";
 
 interface FSNode {
@@ -84,6 +84,7 @@ export default function FileExplorer() {
     const openFile = async (node: FSNode) => {
         const content = await fs.readFile(node.path) as string;
         const obj = JSON.parse(content);
+        console.log(obj.name);
     };
 
     const displayTree = (node: FSNode) => (

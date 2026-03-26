@@ -7,7 +7,7 @@ import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
 import WebViewer from "./WebViewer";
 import FileExplorer from "./FileExplorer";
-import { useWorker } from "./useWorker";
+import { useWorker } from "./WorkerContext";
 import { workerFS, onFSReady } from "./workerFS";
 import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
 

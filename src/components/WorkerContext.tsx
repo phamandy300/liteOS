@@ -1,4 +1,4 @@
-import { createContext, useRef } from "react";
+import { createContext, useRef, useContext } from "react";
 import type {ReactNode} from "react";
 import { attachFSHandler } from "./workerFS";
 
@@ -12,7 +12,7 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
             new URL("./terminal.worker.ts", import.meta.url),
             { type: "module" }
         );
-        attachFSHandler(workerRef.current); // attach once here
+        attachFSHandler(workerRef.current);
         workerRef.current.postMessage({ type: "ready" });
     }
 
@@ -21,4 +21,8 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
             {children}
         </WorkerContext.Provider>
     );
+}
+
+export function useWorker() {
+    return useContext(WorkerContext)!;
 }
