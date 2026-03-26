@@ -7,6 +7,7 @@ declare global {
     interface Window {
         Module: any;
         __requestLine: ((line: string) => void) | null;
+        __onModuleReady: (() => void) | null;
     }
 }
 
@@ -69,6 +70,7 @@ const Terminal = forwardRef((_, ref) => {
                 (window as any).__printPrompt = (cwd: string) => {
                     term.write("\x1b[0m" + cwd + "\x1b[37m > ");
                 };
+                window.__onModuleReady?.();
             }
         };
 

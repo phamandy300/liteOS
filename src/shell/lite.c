@@ -192,9 +192,22 @@ int ltMkdir(char **args) {
     return 1;
 }
 
+#define MAX_LINE_LENGTH 4096
 int ltCat(char **args) {
+    char line[MAX_LINE_LENGTH];
     char* fileName = args[1];
-    // char* lines = args[2];
+    // char* lines = args[2]; // line amount
+    FILE *f = fopen(fileName, "r");
+    if (f == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    while (fgets(line, MAX_LINE_LENGTH, f) != NULL) {
+        printf("%s", line);
+    }
+
+    fclose(f);
 
     return 1;
 }

@@ -1,5 +1,5 @@
 import "./css/Taskbar.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { AppState, WindowState } from "./Desktop";
 
 import sun from "/sun1.png";
@@ -33,6 +33,10 @@ export default function Taskbar({ windows, apps, onToggleWindow, onFocusWindow }
                 {windows.map(w => {
                     const app = apps.find(a => a.id === w.appId);
                     if (!app) return null;
+
+                    if (!w.open && app.singleInstance) {
+                        return;
+                    }
 
                     const isTop = !w.hidden && w.zIndex === Math.max(...windows.filter(w => !w.hidden).map(w => w.zIndex));
 
