@@ -7,15 +7,16 @@ import Taskbar from "./Taskbar";
 import PDFViewer from "./PDFViewer";
 import WebViewer from "./WebViewer";
 import FileExplorer from "./FileExplorer";
-import { useWorker } from "./WorkerContext";
-import { workerFS, onFSReady } from "./workerFS";
-import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
+import { useWorker } from "./em/WorkerContext";
+import { workerFS, onFSReady } from "./em/workerFS";
+// import ParticleBackground, { type ParticleBackgroundHandle } from "./ParticleBackground";
 
 import terminalIcon from "../assets/terminal.png";
 import pdfIcon from "../assets/pdf.png";
 import reactLogo from "../assets/react.svg";
 import resume from "../assets/resume.pdf";
 import explorer from "../assets/explorer.png"
+import kotonohanoniwa from "../assets/kotonohanoniwa.mp4";
 
 export interface AppState {
     id: number;
@@ -53,24 +54,29 @@ export default function Desktop() {
     const fs = workerFS(worker);
     useEffect(() => {
         onFSReady(worker, async () => {
-        try {
-            await fs.mkdir('/home/web_user/desktop');
-        } catch(e) {
-            console.error("[desktop] mkdir failed", e);
-        }
-        for (const app of initialApps) {
             try {
-                const content = JSON.stringify(app) + "\n";
-                await fs.writeFile(`/home/web_user/desktop/${app.name}`, content);
+                await fs.mkdir('/home/web_user/desktop');
+                await fs.mkdir('/home/web_user/downloads');
+                await fs.mkdir('/home/web_user/documents');
+                await fs.mkdir('/home/web_user/pictures');
+                await fs.mkdir('/home/web_user/videos');
+                await fs.mkdir('/home/web_user/music');
             } catch(e) {
-                console.error("[desktop] writeFile failed", app.name, e);
+                console.error("[desktop] mkdir failed", e);
             }
-        }
-        worker.postMessage({ type: "fs:initialized" });
-    });
+            for (const app of initialApps) {
+                try {
+                    const content = JSON.stringify(app) + "\n";
+                    await fs.writeFile(`/home/web_user/desktop/${app.name}`, content);
+                } catch(e) {
+                    console.error("[desktop] writeFile failed", app.name, e);
+                }
+            }
+            worker.postMessage({ type: "fs:initialized" });
+        });
     }, []);
 
-    const particleRef = useRef<ParticleBackgroundHandle>(null);
+    // const particleRef = useRef<ParticleBackgroundHandle>(null);
 
     const [apps, setApps] = useState<AppState[]>(initialApps);
     const [windows, setWindows] = useState<WindowState[]>([]);
@@ -144,7 +150,7 @@ export default function Desktop() {
         setApps(prev => prev.map(a => ({ ...a, selected: false })));
         e.preventDefault();
 
-        particleRef.current?.addParticle(e.clientX, e.clientY);
+        // particleRef.current?.addParticle(e.clientX, e.clientY);
     }, []);
 
     const onAppMouseDown = (e: React.MouseEvent, id: number) => {
@@ -312,7 +318,24 @@ export default function Desktop() {
     return (
         <div>
             <div className="desktop" onMouseDown={onMouseDown} ref={desktopRef}>
-                <ParticleBackground ref={particleRef} />
+                {/* <ParticleBackground ref={particleRef} /> */}
+
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                        position: "absolute",
+                        top: 0, left: 0,
+                        width: "100%", height: "100%",
+                        objectFit: "cover",
+                        zIndex: 0,
+                        pointerEvents: "none",
+                    }}
+                >
+                    <source src={kotonohanoniwa} type="video/mp4" />
+                </video>
 
                 {apps.map(a => (
                     <App

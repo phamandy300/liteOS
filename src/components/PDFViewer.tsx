@@ -15,7 +15,7 @@ export default function PDFViewer({ file }: PDFProps) {
 
     return (
         <div
-            style={{ display: "flex", flexDirection: "column", height: "100%", background: "#1e1e1e" }}
+            style={{ display: "flex", flexDirection: "column", height: "100%", background: "#transparent" }}
             onClickCapture={e => {
                 const link = (e.target as HTMLElement).closest("a");
                 if (link) { e.preventDefault(); window.open(link.href, "_blank"); }
@@ -27,13 +27,12 @@ export default function PDFViewer({ file }: PDFProps) {
                     display: "flex", 
                     gap: "8px", 
                     padding: "8px 12px",
-                    background: "#161616", 
-                    borderBottom: "1px solid #2a2a2a",
+                    background: "transparent", 
                     alignItems: "center", 
                     flexShrink: 0,
             }}>
                 <button onClick={() => setZoom(z => Math.max(0.25, +(z - 0.1).toFixed(2)))}>−</button>
-                <span style={{ color: "#888", fontSize: 12, minWidth: 40, textAlign: "center" }}>
+                <span style={{ color: "#ffffff", fontSize: 12, minWidth: 40, textAlign: "center" }}>
                     {Math.round(zoom * 100)}%
                 </span>
                 <button onClick={() => setZoom(z => Math.min(3, +(z + 0.1).toFixed(2)))}>+</button>

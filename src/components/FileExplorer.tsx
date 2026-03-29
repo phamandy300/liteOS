@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useWorker } from "./WorkerContext";
-import { workerFS, onFSInitialized } from "./workerFS";
+import { useWorker } from "./em/WorkerContext";
+import { workerFS, onFSInitialized } from "./em/workerFS";
 import "./css/FileExplorer.css";
 
 interface FSNode {
@@ -88,17 +88,17 @@ export default function FileExplorer() {
     };
 
     const displayTree = (node: FSNode) => (
-        <div>
+        <div className="filebox">
             {node.children?.map((child, index) => (
                 <div
+                    className="file"
                     key={index}
-                    style={{ background: "#161616", border: "1px solid white" }}
                     onDoubleClick={() => {
                         if (child.isDir) navigateTo(child);
                         else openFile(child);
                     }}
                 >
-                    <p style={{ marginLeft: 16, color: "white" }}>
+                    <p>
                         {child.name}
                     </p>
                 </div>
@@ -107,12 +107,18 @@ export default function FileExplorer() {
     );
 
     return (
-        <div style={{ background: "#161616" }}>
-            <div>
-                <button onClick={goBack}>back</button>
-                <button onClick={goForward}>forward</button>
+        <div className="fe">
+            <div className="toolbar">
+                <button onClick={goBack}>◀</button>
+                <button onClick={goForward}>▶</button>
+                <p style={{ margin: 0, color:"white"}}>{currDir?.path || rootNode?.path}</p>
             </div>
-            {currDir && displayTree(currDir)}
+            <div style={{display: "flex", gap: "8px"}}>
+                <div className="sidebar">
+
+                </div>
+                {currDir && displayTree(currDir)}
+            </div>
         </div>
     );
 }

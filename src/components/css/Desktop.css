@@ -15,10 +15,10 @@
   position: relative;
   overflow: hidden;
 
-  /* background: #D6F2FF; */
-  background: #87B7FF;
+  background: #737373;
+  /* background: #87B7FF; */
   /* background: #0F1C70; */
-  background-size: 400% 400%;
+  /* background-size: 400% 400%; */
 }
 
 * {

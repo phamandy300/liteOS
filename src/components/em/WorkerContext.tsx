@@ -9,7 +9,7 @@ export function WorkerProvider({ children }: { children: ReactNode }) {
 
     if (!workerRef.current) {
         workerRef.current = new Worker(
-            new URL("./terminal.worker.ts", import.meta.url),
+            new URL("./em.worker.ts", import.meta.url),
             { type: "module" }
         );
         attachFSHandler(workerRef.current);

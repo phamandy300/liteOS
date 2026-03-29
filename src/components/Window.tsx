@@ -9,6 +9,7 @@ interface WindowProps {
     initialY?: number;
     width?: number;
     height?: number;
+    taskbarH?: number
     onClose?: () => void;
     onMinimize?: () => void;
     onFocus?: () => void;
@@ -32,6 +33,7 @@ export default function Window({
 }: WindowProps) {
     const [pos, setPos] = useState({ x: initialX, y: initialY });
     const [size, setSize] = useState({w: width, h: height});
+    const prevSize = useRef({ w: width, h: height });
     const dragging = useRef(false);
     const dragOffset = useRef({ x: 0, y: 0 });
 
@@ -64,7 +66,7 @@ export default function Window({
             if (dragging.current) {
                 setPos({ x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y });
                 if (isMaximized.current) {
-                    setSize({ w: width, h: height });
+                    setSize({ w: prevSize.current.w, h: prevSize.current.h });
                     isMaximized.current = false;
                 }
             }
@@ -80,6 +82,7 @@ export default function Window({
                 setSize(prev => {
                     const newW = Math.max(MIN_W, prev.w + (dir.includes("e") ? dx : dir.includes("w") ? -dx : 0));
                     const newH = Math.max(MIN_H, prev.h + (dir.includes("s") ? dy : dir.includes("n") ? -dy : 0));
+                    prevSize.current = { w: newW, h: newH };
                     return { w: newW, h: newH };
                 });
 
@@ -87,6 +90,8 @@ export default function Window({
                     x: prev.x + (dir.includes("w") ? dx : 0),
                     y: prev.y + (dir.includes("n") ? dy : 0),
                 }));
+
+
             }
             
         };
@@ -106,12 +111,15 @@ export default function Window({
 
     const maximize = () => {
         if (isMaximized.current) {
-            setSize({ w: width, h: height });
+            setSize({ w: prevSize.current.w, h: prevSize.current.h });
             setPos({ x: prevPos.current.x, y: prevPos.current.y });
             isMaximized.current = false;
         } else {
             prevPos.current = { x: pos.x, y: pos.y };
-            setSize({ w: window.innerWidth, h: window.innerHeight });
+            setSize({ 
+                w: window.innerWidth, 
+                h: window.innerHeight - 70
+            });
             setPos({ x: 0, y: 0 });
             isMaximized.current = true;
         }
@@ -119,7 +127,7 @@ export default function Window({
 
     return (
         <div
-            className="window"
+            className={`window${isMaximized.current ? " max" : ""}`}
             style={{ left: pos.x, top: pos.y, width: size.w, zIndex }}
             onMouseDown={onFocus}
         >
@@ -133,7 +141,9 @@ export default function Window({
                             setPos({ x: initialX, y: initialY });
                         }}
                         title="Close"
-                    />
+                    >
+                        <div className="win-btn-icon" style={{ maskImage: "url('/close.png')", WebkitMaskImage: "url('/close.png')" }} />
+                    </button>
                     <button
                         className="win-btn minimize"
                         onClick={(e) => { 
@@ -141,7 +151,9 @@ export default function Window({
                             onMinimize?.();
                         }}
                         title="Minimize"
-                    />
+                    >
+                        <div className="win-btn-icon" style={{ maskImage: "url('/chevron_down.png')", WebkitMaskImage: "url('/chevron_down.png')" }} />
+                    </button>
                     <button
                         className="win-btn maximize"
                         onClick={(e) => { 
@@ -149,13 +161,15 @@ export default function Window({
                             maximize();
                         }}
                         title="Maximize"
-                    />
+                    >
+                        <div className="win-btn-icon" style={{ maskImage: "url('/chevron_up.png')", WebkitMaskImage: "url('/chevron_up.png')" }} />
+                    </button>
                 </div>
                 <span className="window-title">{title}</span>
             </div>
 
             {/* Content */}
-            <div className="window-content" style={{ height: size.h }}>
+            <div className={title === "Terminal" ? "window-content-terminal" : "window-content"} style={{ height: size.h }}>
                 {children}
             </div>
             

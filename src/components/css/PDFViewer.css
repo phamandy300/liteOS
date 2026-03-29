@@ -5,8 +5,8 @@
 .zoom button {
     font-family: inherit;
     background: transparent;
-    border: 1px solid #3a3a3a;
-    color: #888;
+    border: 1px solid #ffffff82;
+    color: #ffffff;
     padding: 2px 10px;
     border-radius: 4px;
     cursor: pointer;
@@ -15,11 +15,13 @@
 }
 
 .zoom button:hover {
-    border-color: #666;
-    color: #ccc;
+    background: #ffffff41;
+    border-color: #ffffffaf;
+    color: #ffffff;
 }
 
 .zoom button:active {
+    background: #00000041;
     color: #fff;
-    border-color: #888;
+    border-color: #ffffff;
 }

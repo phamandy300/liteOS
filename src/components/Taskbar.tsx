@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 import type { AppState, WindowState } from "./Desktop";
 
 import sun from "/sun1.png";
-
-// TODO:
-// MAKE TASKBAR TAB ORDER INDEPENDENT OF WINDOW
+import ako from "../assets/akonadi.png";
 
 interface TaskbarProps {
     windows: WindowState[];
@@ -30,16 +28,12 @@ export default function Taskbar({ windows, apps, onToggleWindow, onFocusWindow }
         <div className="taskbar">
             <div className="taskbar-left">
                 <div className="start-button">
-                    <img src={sun} width={28} />
+                    <img className="start-icon" src={ako} width={28} />
                 </div>
 
                 {windows.map(w => {
                     const app = apps.find(a => a.id === w.appId);
                     if (!app) return null;
-
-                    if (!w.open && app.singleInstance) {
-                        return;
-                    }
 
                     const isTop = !w.hidden && w.zIndex === Math.max(...windows.filter(w => !w.hidden).map(w => w.zIndex));
 

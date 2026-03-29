@@ -44,7 +44,7 @@ self.addEventListener("message", (e: MessageEvent) => {
             else if (op === "writeFile") {
                 FS.writeFile(path, e.data.data);
             }
-            self.postMessage({ type: "fs:result", id, result }); // this was missing
+            self.postMessage({ type: "fs:result", id, result });
         } catch (err: any) {
             self.postMessage({ type: "fs:result", id, result: null, error: err.message });
         }
@@ -54,6 +54,6 @@ self.addEventListener("message", (e: MessageEvent) => {
     } else if (type === "terminal:connect") {
         if (lastPrompt !== null) self.postMessage({ type: "prompt", data: lastPrompt });
     } else if (type === "fs:initialized") {
-        self.postMessage({ type: "fs:initialized" }); // echo back to all listeners
+        self.postMessage({ type: "fs:initialized" });
     }
 });
