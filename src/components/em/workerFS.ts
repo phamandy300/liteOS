@@ -37,5 +37,6 @@ export const workerFS = (worker: Worker) => ({
     stat:      (path: string) => fsRequest(worker, "stat",      { path }),
     readFile:  (path: string) => fsRequest(worker, "readFile",  { path }),
     mkdir:     (path: string) => fsRequest(worker, "mkdir",     { path }),
+    rmdir:     (path: string) => fsRequest(worker, "rmdir",     { path }),
     writeFile: (path: string, data: string) => fsRequest(worker, "writeFile", { path, data }),
 });

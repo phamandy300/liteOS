@@ -41,6 +41,8 @@ self.addEventListener("message", (e: MessageEvent) => {
             }
             else if (op === "readFile") result = FS.readFile(path, { encoding: "utf8" });
             else if (op === "mkdir") FS.mkdir(path);
+            else if (op === "rmdir") FS.rmdir(path);
+            // else if (op === "chdir") FS.chdir(path);
             else if (op === "writeFile") {
                 FS.writeFile(path, e.data.data);
             }

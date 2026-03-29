@@ -10,7 +10,11 @@ interface FSNode {
     children: FSNode[];
 }
 
-export default function FileExplorer() {
+interface FileExplorerProps {
+    onFileDoubleClick?: (id: number) => void;
+}
+
+export default function FileExplorer({onFileDoubleClick}: FileExplorerProps) {
     const worker = useWorker();
     const fs = workerFS(worker);
 
@@ -84,7 +88,8 @@ export default function FileExplorer() {
     const openFile = async (node: FSNode) => {
         const content = await fs.readFile(node.path) as string;
         const obj = JSON.parse(content);
-        console.log(obj.name);
+
+        onFileDoubleClick?.(obj.id);
     };
 
     const displayTree = (node: FSNode) => (

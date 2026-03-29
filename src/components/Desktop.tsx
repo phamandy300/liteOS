@@ -55,19 +55,20 @@ export default function Desktop() {
     useEffect(() => {
         onFSReady(worker, async () => {
             try {
-                await fs.mkdir('/home/web_user/desktop');
-                await fs.mkdir('/home/web_user/downloads');
-                await fs.mkdir('/home/web_user/documents');
-                await fs.mkdir('/home/web_user/pictures');
-                await fs.mkdir('/home/web_user/videos');
-                await fs.mkdir('/home/web_user/music');
+                await fs.rmdir('/home/web_user');
+                await fs.mkdir('/home/desktop');
+                await fs.mkdir('/home/downloads');
+                await fs.mkdir('/home/documents');
+                await fs.mkdir('/home/pictures');
+                await fs.mkdir('/home/videos');
+                await fs.mkdir('/home/music');
             } catch(e) {
                 console.error("[desktop] mkdir failed", e);
             }
             for (const app of initialApps) {
                 try {
                     const content = JSON.stringify(app) + "\n";
-                    await fs.writeFile(`/home/web_user/desktop/${app.name}`, content);
+                    await fs.writeFile(`/home/desktop/${app.name}`, content);
                 } catch(e) {
                     console.error("[desktop] writeFile failed", app.name, e);
                 }
@@ -128,7 +129,8 @@ export default function Desktop() {
         const app = apps.find(a => a.id === id);
         if (!app) return;
         topZ++;
-        setWindows(prev => [...prev, { id: windowId++, appId: app.id, zIndex: topZ, hidden: false }]);
+        const newId = windowId++;
+        setWindows(prev => [...prev, { id: newId, appId: app.id, zIndex: topZ, hidden: false }]);
     }, [apps, windows]);
 
     // MOUSE STUFF
@@ -368,7 +370,7 @@ export default function Desktop() {
                                 {app.name === "Terminal" && <Terminal ref={terminalRef} />}
                                 {app.name === "Resume"   && <PDFViewer file={resume} />}
                                 {app.name === "Portfolio"   && <WebViewer url="https://andypham.cc/" />}
-                                {app.name === "File Explorer"   && <FileExplorer />}
+                                {app.name === "File Explorer"   && <FileExplorer onFileDoubleClick={onAppDoubleClick}/>}
                             </Window>
                         </div>
                     );
