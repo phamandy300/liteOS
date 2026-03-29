@@ -65,6 +65,7 @@ export default function FileExplorer({onFileDoubleClick}: FileExplorerProps) {
     }, []);
 
     const currDir = backStack[backStack.length - 1] ?? rootNode;
+    const homeDir = (rootNode?.children.find(c => c.name === "home")) ?? rootNode;
 
     const navigateTo = (node: FSNode) => {
         setBackStack(prev => [...prev, node]);
@@ -111,18 +112,40 @@ export default function FileExplorer({onFileDoubleClick}: FileExplorerProps) {
         </div>
     );
 
+    const displayTreeSide = (node: FSNode) => (
+        <div className="filebox">
+            {node.children?.map((child, index) => (
+                <div
+                    className="file"
+                    key={index}
+                    onClick={() => {
+                        if (child.isDir) navigateTo(child);
+                        else openFile(child);
+                    }}
+                >
+                    <p>
+                        {child.name}
+                    </p>
+                </div>
+            ))}
+        </div>
+    );
+
+
     return (
         <div className="fe">
-            <div className="toolbar">
-                <button onClick={goBack}>◀</button>
-                <button onClick={goForward}>▶</button>
-                <p style={{ margin: 0, color:"white"}}>{currDir?.path || rootNode?.path}</p>
+            <div className="sidebar">
+                {homeDir && displayTreeSide(homeDir)}
             </div>
-            <div style={{display: "flex", gap: "8px"}}>
-                <div className="sidebar">
-
+            <div className="fe-main">
+                <div className="toolbar">
+                    <button onClick={goBack}>◀</button>
+                    <button onClick={goForward}>▶</button>
+                    <p style={{ margin: 0, color:"white"}}>{currDir?.path || rootNode?.path}</p>
                 </div>
-                {currDir && displayTree(currDir)}
+                <div style={{display: "flex", gap: "8px"}}>
+                    {currDir && displayTree(currDir)}
+                </div>
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import "./css/Taskbar.css";
 import { useState, useEffect } from "react";
 import type { AppState, WindowState } from "./Desktop";
 
-import sun from "/sun1.png";
+// import sun from "/sun1.png";
 import ako from "../assets/akonadi.png";
 
 interface TaskbarProps {
